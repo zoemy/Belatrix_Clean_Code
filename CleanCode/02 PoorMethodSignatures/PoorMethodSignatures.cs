@@ -9,8 +9,8 @@ namespace CleanCode.PoorMethodSignatures
         {
             var userService = new UserService();
 
-            var user = userService.GetUser("username", "password", true);
-            var anotherUser = userService.GetUser("username", null, false);
+            var user = userService.GetUser("username", "password");
+            var anotherUser = userService.GetUser("username", null);
         }
     }
 
@@ -18,25 +18,17 @@ namespace CleanCode.PoorMethodSignatures
     {
         private UserDbContext _dbContext = new UserDbContext();
 
-        public User GetUser(string username, string password, bool login)
+        public User GetUser(string username, string password)
         {
-            if (login)
-            {
-                // Check if there is a user with the given username and password in db
-                // If yes, set the last login date 
-                // and then return the user. 
-                var user = _dbContext.Users.SingleOrDefault(u => u.Username == username && u.Password == password);
-                if (user != null)
-                    user.LastLogin = DateTime.Now;
-                return user;
-            }
-            else
-            {
-                // Check if there is a user with the given username
-                // If yes, return it, otherwise return null
-                var user = _dbContext.Users.SingleOrDefault(u => u.Username == username);
-                return user;
-            }
+            return string.IsNullOrEmpty(password) ? _dbContext.Users.SingleOrDefault(u => u.Username == username) : GetUserByCredentials(username, password);           
+        }
+
+        private User GetUserByCredentials(string username, string password)
+        {
+            var user = _dbContext.Users.SingleOrDefault(u => u.Username == username && u.Password == password);
+            if (user != null)
+                user.LastLogin = DateTime.Now;
+            return user;
         }
     }
 
